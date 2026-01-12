@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Bean {
+  id               String        @id @default(cuid())
+  name             String
+  roaster          String?
+  origin           String?
+  region           String?
+  altitude         Int?
+  variety          String?
+  processingMethod String?
+  roastLevel       String?
+  flavorNotes      String[]
+  price            Float?
+  url              String?
+  imageUrl         String?
+  scrapedAt        DateTime      @default(now())
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  
+  ratings          BeanRating[]
+  brewSessions     BrewSession[]
+
+  @@index([origin])
+  @@index([roaster])
+}
+
+model BrewSession {
+  id           String   @id @default(cuid())
+  beanId       String
+  bean         Bean     @relation(fields: [beanId], references: [id], onDelete: Cascade)
+  
+  // Barista Express settings
+  grindSize    Int      // 1-16 on dial
+  doseGrams    Float
+  yieldGrams   Float
+  timeSeconds  Int
+  temperatureF Int
+  pressureBar  Float?
+  
+  // Evaluation
+  rating       Int      // 1-5
+  notes        String?
+  tasteNotes   String[]
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([beanId])
+  @@index([createdAt])
+}
+
+model BeanRating {
+  id        String   @id @default(cuid())
+  beanId    String
+  bean      Bean     @relation(fields: [beanId], references: [id], onDelete: Cascade)
+  
+  rating    Int      // 1-5
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([beanId])
+  @@index([rating])
+}
